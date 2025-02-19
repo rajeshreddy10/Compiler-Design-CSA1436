@@ -1,0 +1,91 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+
+const char *input;
+char current_char;
+
+void error() {
+    printf("Error parsing input\n");
+    exit(1);
+}
+
+void next_char() {
+    current_char = *input ? *input++ : '\0';
+}
+
+void match(char expected) {
+    if (current_char == expected) {
+        next_char();
+    } else {
+        error();
+    }
+}
+
+// Forward declarations
+void factor();
+void term();
+void expr();
+
+void factor() {
+    if (current_char == '(') {
+        match('(');
+        expr();
+        match(')');
+    } else if (isdigit(current_char)) {
+        printf("Processed number: %c\n", current_char);
+        next_char();
+        while (isdigit(current_char)) {  // Handle multi-digit numbers
+            printf("Processed number: %c\n", current_char);
+            next_char();
+        }
+    } else {
+        error();
+    }
+}
+
+void term() {
+    factor();
+    while (current_char == '*' || current_char == '/') {
+        char op = current_char;
+        next_char();
+        factor();
+        printf("Processed term with operator: %c\n", op);
+    }
+}
+
+void expr() {
+    term();
+    while (current_char == '+' || current_char == '-') {
+        char op = current_char;
+        next_char();
+        term();
+        printf("Processed expression with operator: %c\n", op);
+    }
+}
+
+int main() {
+    printf("Enter an expression: ");
+    char buffer[256];
+    if (!fgets(buffer, sizeof(buffer), stdin)) {
+        error();
+    }
+
+    // Remove the newline character if present
+    size_t len = strlen(buffer);
+    if (len > 0 && buffer[len - 1] == '\n') {
+        buffer[len - 1] = '\0';
+    }
+
+    input = buffer;
+    next_char();  // Initialize current_char
+    expr();
+
+    if (current_char != '\0') {
+        error();  // If there's any leftover input, it's an error
+    }
+
+    printf("Expression parsed successfully\n");
+    return 0;
+}
