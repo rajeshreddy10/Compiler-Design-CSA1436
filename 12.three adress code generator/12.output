@@ -1,0 +1,58 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX 100
+
+char stack[MAX];
+int top = -1;
+
+void push(char c) {
+    if (top < MAX - 1) {
+        stack[++top] = c;
+    }
+}
+
+char pop() {
+    if (top >= 0) {
+        return stack[top--];
+    }
+    return '\0';
+}
+
+int isOperator(char c) {
+    return (c == '+' || c == '-' || c == '*' || c == '/');
+}
+
+void generateThreeAddressCode(char *expression) {
+    char tempVar = 't'; 
+    char *output = (char *)malloc(MAX * sizeof(char));
+    int index = 0;
+
+    for (int i = 0; i < strlen(expression); i++) {
+        if (isalnum(expression[i])) { 
+            output[index++] = expression[i];
+        } else if (isOperator(expression[i])) { 
+            char op1 = output[--index]; 
+            char op2 = output[--index]; 
+            char temp[10];
+            sprintf(temp, "%c = %c %c %c", tempVar, op2, expression[i], op1);
+            printf("%s\n", temp); 
+            output[index++] = tempVar++;
+        }
+    }
+    free(output);
+}
+
+int main() {
+    char expression[MAX];
+
+    printf("Enter an infix expression: ");
+    scanf("%s", expression);
+
+    printf("Three Address Code:\n");
+    generateThreeAddressCode(expression);
+
+    return 0;
+}
